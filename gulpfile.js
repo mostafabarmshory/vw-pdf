@@ -42,6 +42,7 @@ var webpackStream = require("webpack-stream");
 var Vinyl = require("vinyl");
 var vfs = require("vinyl-fs");
 var through = require("through2");
+var jeditor = require("gulp-json-editor");
 
 var BUILD_DIR = "build/";
 var L10N_DIR = "l10n/";
@@ -732,6 +733,18 @@ function buildGeneric(defines, dir) {
     gulp
       .src("web/compressed.tracemonkey-pldi-09.pdf")
       .pipe(gulp.dest(dir + "web")),
+    gulp
+      .src("package.json")
+      .pipe(jeditor(function(json) {
+           delete json.devDependencies;
+           delete json.scripts;
+           delete json.repository;
+           json.index = "web/viewer.html";
+           json.homepage = "https://github.com/viraweb123/vw-pdf/";
+           return json; // must return JSON object.
+       }))
+      .pipe(rename("spa.json"))
+      .pipe(gulp.dest(dir)),
   ]);
 }
 
