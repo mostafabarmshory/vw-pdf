@@ -42,7 +42,6 @@ var webpackStream = require("webpack-stream");
 var Vinyl = require("vinyl");
 var vfs = require("vinyl-fs");
 var through = require("through2");
-var jeditor = require("gulp-json-editor");
 
 var BUILD_DIR = "build/";
 var L10N_DIR = "l10n/";
@@ -733,18 +732,6 @@ function buildGeneric(defines, dir) {
     gulp
       .src("web/compressed.tracemonkey-pldi-09.pdf")
       .pipe(gulp.dest(dir + "web")),
-    gulp
-      .src("package.json")
-      .pipe(jeditor(function(json) {
-           delete json.devDependencies;
-           delete json.scripts;
-           delete json.repository;
-           json.index = "web/viewer.html";
-           json.homepage = "https://github.com/viraweb123/vw-pdf/";
-           return json; // must return JSON object.
-       }))
-      .pipe(rename("spa.json"))
-      .pipe(gulp.dest(dir)),
   ]);
 }
 
@@ -1921,3 +1908,39 @@ gulp.task(
     "lint-chromium"
   )
 );
+
+
+
+/*
+Generate Viraweb123 SPA
+
+Adding index and SPA configuration file into the build folder, and convert
+the product to an spa.
+
+@author viraweb123.ir
+ */
+var jeditor = require("gulp-json-editor");
+gulp.task("spa", 
+  gulp.series(
+  "generic", 
+  function () {
+    console.log("### Converting to a SPA");
+    var dir = GENERIC_DIR;
+    return merge([
+      gulp
+        .src("package.json")
+        .pipe(jeditor(function(json) {
+           delete json.devDependencies;
+           delete json.scripts;
+           delete json.repository;
+           json.name = "vw-pdf";
+           json.main_page = "web/viewer.html";
+           json.homepage = "https://github.com/viraweb123/vw-pdf/";
+           return json; // must return JSON object.
+       }))
+      .pipe(rename("spa.json"))
+      .pipe(gulp.dest(dir))
+    ]);
+  })
+);
+
